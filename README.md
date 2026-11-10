@@ -136,6 +136,20 @@ Como mucho se crean 5 cuentas por conexión y hora, y los códigos incorrectos c
 2. Sube los cambios a Git y en Portainer pulsa **Pull and redeploy** en el stack (en la opción B, vuelve a construir la imagen y actualiza el stack).
 3. Al arrancar, la app actualiza la base de datos sola si hace falta. Antes guarda una copia del archivo anterior en el mismo volumen (`presupuesto-antes-de-actualizar-AAAA-MM-DD.db`) y lo indica en los logs.
 
+## Consultar la base de datos
+
+- **Desde Portainer:** Containers → `presupuesto` → Console → Connect (`/bin/bash`) y escribe `sqlite3 -readonly /data/presupuesto.db`. Comandos útiles: `.tables`, `.schema movements`, `.mode box`, `.quit`.
+- **Visor web:** descomenta el servicio `visor-bd` en `docker-compose.yml`, define `SQLITE_WEB_PASSWORD` y abre `http://IP-DEL-SERVIDOR:8086` desde tu red. Va en solo lectura; no lo publiques en Cloudflare.
+
+Los importes están en céntimos y cada presupuesto se distingue por `budget_id`:
+
+```sql
+SELECT id, username, budget_id FROM users;
+SELECT name, amount / 100.0 AS euros, start_month, end_month, every
+  FROM movements WHERE budget_id = 1 AND kind = 'gasto' ORDER BY name;
+SELECT month, amount / 100.0 AS euros FROM savings_plan WHERE budget_id = 1 ORDER BY month;
+```
+
 ## Copias de seguridad
 
 - Desde la app: **Ajustes → Descargar copia** genera un JSON con tu presupuesto. Con **Restaurar una copia** lo vuelves a cargar (sustituye los datos de tu presupuesto; no toca las cuentas ni otros presupuestos).

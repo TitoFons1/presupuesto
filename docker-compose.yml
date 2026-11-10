@@ -25,6 +25,22 @@ services:
       # Puerto del servidor al que apuntará Cloudflare Tunnel: http://IP-DEL-SERVIDOR:8085
       - "${APP_PORT:-8085}:3000"
 
+  # Opcional: visor web de la base de datos (solo lectura y con contraseña).
+  # Ábrelo desde tu red en http://IP-DEL-SERVIDOR:8086 y NO lo publiques en Cloudflare.
+  # Para activarlo, descomenta el bloque y pon SQLITE_WEB_PASSWORD en las variables de Portainer.
+  # visor-bd:
+  #   image: ghcr.io/coleifer/sqlite-web:latest
+  #   restart: unless-stopped
+  #   command: ["presupuesto.db", "--read-only", "--password"]
+  #   environment:
+  #     SQLITE_WEB_PASSWORD: ${SQLITE_WEB_PASSWORD:?Pon SQLITE_WEB_PASSWORD en las variables del stack}
+  #   volumes:
+  #     - presupuesto-datos:/data
+  #   ports:
+  #     - "8086:8080"
+  #   depends_on:
+  #     - presupuesto
+
   # Opcional: si quieres que el túnel viva en este mismo stack, descomenta este
   # servicio, pon TUNNEL_TOKEN en las variables de Portainer y, en Cloudflare,
   # apunta el hostname público a http://presupuesto:3000. Entonces puedes quitar «ports».

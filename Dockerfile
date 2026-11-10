@@ -20,7 +20,11 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY server ./server
 COPY public ./public
-RUN mkdir -p /data && chown -R node:node /data
+# sqlite3: para consultar la base de datos desde la consola del contenedor (Portainer > Console).
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends sqlite3 \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p /data && chown -R node:node /data
 USER node
 EXPOSE 3000
 VOLUME ["/data"]
