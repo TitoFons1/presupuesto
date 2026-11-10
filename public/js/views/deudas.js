@@ -39,10 +39,10 @@ export function render(main, ctx) {
     }
     const pagados = ms.filter(k => importeHoja(m, k) > 0).length;
     lista.append(h('li', { class: 'deuda' },
-      h('div', { class: 'info' }, h('p', { class: 'nom', text: m.name }), lineas),
+      h('div', { class: 'info' }, h('button', { type: 'button', class: 'nom', 'aria-label': `Editar ${m.name}`, onclick: () => ctx.abrirMovimiento({ id: m.id }), text: m.name }), lineas),
       h('div', { class: 'pista-meses barras', role: 'img', 'aria-label': `Se paga en ${pagados} de los ${ms.length} meses del plan` },
         ms.map(k => { const v = importeHoja(m, k); return h('i', { class: v > 0 ? (k === fin ? 'on ultimo' : 'on') : null, title: `${mesTitulo(k)}: ${v > 0 ? eur(v) : 'sin pago'}` }); })),
-      h('button', { type: 'button', class: 'cuota', 'data-fk': 'deu-' + m.id, 'aria-label': `Editar ${m.name}`, onclick: () => ctx.abrirMovimiento({ id: m.id }), text: eur(importeHoja(m, ctx.mes) || m.amount) })));
+      h('span', { class: 'cuota', 'data-fk': 'deu-' + m.id, text: eur(importeHoja(m, ctx.mes) || m.amount) })));
   }
   main.append(h('section', { class: 'seccion' },
     h('div', { class: 'seccion-cab' }, h('h2', { text: 'Calendario de pagos' }), h('p', { text: 'Cada casilla es un mes del plan. La más oscura es el último pago.' })),

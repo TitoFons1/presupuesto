@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { db } from './db.js';
+import { db, crearPresupuesto, sembrar } from './db.js';
 
 const COOKIE = 'presupuesto_sesion';
 const DURACION_MS = 30 * 24 * 60 * 60 * 1000; // 30 días
@@ -22,6 +22,7 @@ export function verifyPassword(password, stored) {
 }
 
 const sha256 = t => crypto.createHash('sha256').update(t).digest('hex');
+export const mismoTexto = (a, b) => crypto.timingSafeEqual(Buffer.from(sha256(String(a))), Buffer.from(sha256(String(b))));
 
 function leerCookie(req, nombre) {
   const raw = req.headers.cookie || '';
@@ -64,12 +65,15 @@ export function cerrarOtrasSesiones(userId, req) {
   db.prepare('DELETE FROM sessions WHERE user_id = ? AND token_hash != ?').run(userId, token ? sha256(token) : '');
 }
 
+const leerPrefs = t => { try { const p = JSON.parse(t || '{}'); return p && typeof p === 'object' ? p : {}; } catch { return {}; } };
+export const usuarioPublico = u => ({ id: u.id, username: u.username, prefs: leerPrefs(u.prefs) });
+
 export function usuarioDeSesion(req, res) {
   const token = leerCookie(req, COOKIE);
   if (!token) return null;
   const h = sha256(token);
-  const fila = db.prepare(`SELECT s.expires_at, u.id, u.username FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?`).get(h);
-  if (!fila) return null;
+  const fila = db.prepare(`SELECT s.expires_at, u.id, u.username, u.budget_id, u.prefs FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?`).get(h);
+  if (!fila || fila.budget_id == null) return null;
   const ahora = Date.now();
   if (fila.expires_at < ahora) {
     db.prepare('DELETE FROM sessions WHERE token_hash = ?').run(h);
@@ -79,7 +83,7 @@ export function usuarioDeSesion(req, res) {
     db.prepare('UPDATE sessions SET expires_at = ? WHERE token_hash = ?').run(ahora + DURACION_MS, h);
     escribirCookie(req, res, token, DURACION_MS);
   }
-  return { id: fila.id, username: fila.username };
+  return { id: fila.id, username: fila.username, budget_id: fila.budget_id, prefs: leerPrefs(fila.prefs) };
 }
 
 export function requireAuth(req, res, next) {
@@ -97,28 +101,48 @@ export function requireAppHeader(req, res, next) {
   next();
 }
 
-// Límite de intentos de inicio de sesión por IP.
-const intentos = new Map();
-const VENTANA_MS = 15 * 60 * 1000;
-const MAX_FALLOS = 8;
-export function ipDe(req) {
-  return req.get('CF-Connecting-IP') || req.ip || 'desconocida';
+/* ---------- límites por IP ---------- */
+function limitador(max, ventanaMs) {
+  const mapa = new Map();
+  return {
+    bloqueado(ip) {
+      const e = mapa.get(ip);
+      if (!e) return false;
+      if (Date.now() - e.desde > ventanaMs) { mapa.delete(ip); return false; }
+      return e.n >= max;
+    },
+    sumar(ip) {
+      const e = mapa.get(ip);
+      if (!e || Date.now() - e.desde > ventanaMs) mapa.set(ip, { n: 1, desde: Date.now() });
+      else e.n++;
+    },
+    limpiar(ip) { mapa.delete(ip); },
+  };
 }
-export function bloqueado(ip) {
-  const e = intentos.get(ip);
-  if (!e) return false;
-  if (Date.now() - e.desde > VENTANA_MS) { intentos.delete(ip); return false; }
-  return e.n >= MAX_FALLOS;
-}
-export function registrarFallo(ip) {
-  const e = intentos.get(ip);
-  if (!e || Date.now() - e.desde > VENTANA_MS) intentos.set(ip, { n: 1, desde: Date.now() });
-  else e.n++;
-}
-export function limpiarFallos(ip) { intentos.delete(ip); }
+const fallosLogin = limitador(8, 15 * 60 * 1000);
+export const altas = limitador(5, 60 * 60 * 1000); // como mucho 5 cuentas nuevas por IP y hora
+export const ipDe = req => req.get('CF-Connecting-IP') || req.ip || 'desconocida';
+export const bloqueado = ip => fallosLogin.bloqueado(ip);
+export const registrarFallo = ip => fallosLogin.sumar(ip);
+export const limpiarFallos = ip => fallosLogin.limpiar(ip);
 
 export function limpiarSesionesCaducadas() {
   db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(Date.now());
+}
+
+/* ---------- registro ---------- */
+// REGISTRO=abierto   cualquiera con el enlace puede crearse una cuenta
+// REGISTRO=codigo    hace falta el código de REGISTRO_CODIGO (por defecto)
+// REGISTRO=cerrado   nadie puede registrarse; solo se dan accesos desde Ajustes
+export function modoRegistro() {
+  const modo = (process.env.REGISTRO || 'codigo').toLowerCase();
+  if (modo === 'abierto') return 'abierto';
+  if (modo === 'codigo' && (process.env.REGISTRO_CODIGO || '').trim()) return 'codigo';
+  return 'cerrado';
+}
+
+export function crearUsuario(username, password, budgetId) {
+  return Number(db.prepare('INSERT INTO users (username, password_hash, budget_id) VALUES (?, ?, ?)').run(username, hashPassword(password), budgetId).lastInsertRowid);
 }
 
 // Crea la primera cuenta si no hay ninguna.
@@ -132,7 +156,10 @@ export function asegurarAdmin() {
     password = crypto.randomBytes(12).toString('base64url');
     generada = true;
   }
-  db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(usuario, hashPassword(password));
+  const existente = db.prepare('SELECT id FROM budgets ORDER BY id LIMIT 1').get();
+  const bid = existente ? existente.id : crearPresupuesto();
+  sembrar(bid);
+  crearUsuario(usuario, password, bid);
   if (generada) {
     console.log('==========================================================');
     console.log(' Primera cuenta creada');

@@ -102,15 +102,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .marca { font-family: var(--f-titulo); font-weight: 750; font-size: 21px; letter-spacing: -.02em; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
 .nav { display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .nav::-webkit-scrollbar { display: none; }
-.nav a { padding: 8px 10px; text-decoration: none; color: var(--tinta-2); font-size: 15px; white-space: nowrap; border-radius: var(--r-s); }
+.nav a { padding: 8px 7px; text-decoration: none; color: var(--tinta-2); font-size: 15px; white-space: nowrap; border-radius: var(--r-s); }
 .nav a:hover { color: var(--tinta); background: var(--papel-2); }
 .nav a[aria-current="page"] { color: var(--tinta); font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 7px; }
 .usuario { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--tinta-2); }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .cabecera-in { padding-top: 8px; justify-content: space-between; }
   .nav { order: 3; flex-basis: 100%; margin-inline: -10px; padding-bottom: 4px; }
 }
-@media (max-width: 420px) { .quien { display: none; } }
+@media (max-width: 1240px) { .quien { display: none; } }
 
 /* ---------- vista ---------- */
 .vista {
@@ -278,9 +278,9 @@ legend { font-size: 14px; font-weight: 600; padding: 0; margin-bottom: 6px; }
 .fila .nombre { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; overflow-wrap: anywhere; }
 .fila .importe { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
 .fila.hijo .importe { font-weight: 400; color: var(--tinta-2); }
-.plegar { width: 24px; height: 24px; display: inline-grid; place-items: center; border: 1px solid var(--regla); border-radius: 5px; background: var(--hoja); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 0 1px; color: var(--tinta); }
+.plegar { width: 24px; height: 24px; flex: none; display: inline-grid; place-items: center; border: 1px solid var(--regla); border-radius: 5px; background: var(--hoja); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 0 1px; color: var(--tinta); }
 .plegar:hover { border-color: var(--tinta-2); }
-.plegar-hueco { width: 24px; height: 24px; }
+.plegar-hueco { width: 24px; height: 24px; flex: none; }
 .etiqueta { font-size: 12.5px; padding: 1px 8px; border-radius: 999px; background: var(--papel-2); color: var(--tinta-2); white-space: nowrap; }
 .etiqueta.fin { background: var(--bien-suave); color: var(--bien); }
 
@@ -357,7 +357,7 @@ tr.hijo .arbol .nom { font-weight: 400; }
 .cat-cab .en-linea { flex: 1 1 260px; }
 .cat-nom { font-weight: 650; }
 .usos { font-size: 13px; color: var(--tinta-3); }
-.acc { display: inline-flex; gap: 14px; margin-left: auto; }
+span.acc { display: inline-flex; gap: 14px; margin-left: auto; }
 .cats .acc .enlace, .tipos .acc .enlace { font-size: 14px; color: var(--tinta-2); text-decoration-color: var(--regla); }
 .cats .acc .enlace:hover, .tipos .acc .enlace:hover { color: var(--tinta); text-decoration-color: currentColor; }
 .muestra-btn { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--regla); border-radius: 6px; background: var(--hoja); cursor: pointer; padding: 0; }
@@ -419,6 +419,7 @@ tr.hijo .arbol .nom { font-weight: 400; }
 .acceso-in { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 20px; }
 .acceso h1 { font-size: clamp(42px, 9vw, 58px); letter-spacing: -.035em; display: flex; align-items: flex-end; }
 .acceso .lema { font-family: var(--f-titulo); font-size: 21px; color: var(--tinta-2); line-height: 1.35; font-weight: 500; }
+.cambio-acceso { color: var(--tinta-2); font-size: 15px; }
 .acceso form { background: var(--hoja); border: 1px solid var(--regla); border-radius: 12px; padding: 22px; display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -427,4 +428,165 @@ tr.hijo .arbol .nom { font-weight: 400; }
 }
 @media (forced-colors: active) {
   .muestra, .color-op, .reparto .relleno, .pista-meses.barras i.on { forced-color-adjust: none; }
+}
+
+/* =====================================================================
+   Integración entre vistas y móvil
+   ===================================================================== */
+.vista > *, .dos > *, .columna > *, .seccion > * { min-width: 0; }
+.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.boton .ico { width: 18px; height: 18px; }
+.anadir-cab { padding-left: 10px; }
+.barra-inferior, .fab, .boton-filtros, .resumen-movil, .etq-movil, .det { display: none; }
+
+/* Mes como título: ‹ Diciembre 2026 › */
+.cab-mes { align-items: center; justify-content: flex-start; gap: 10px 18px; }
+.barra-mes { display: inline-flex; align-items: center; gap: 6px; }
+.mes-envoltura { position: relative; display: inline-flex; align-items: center; }
+.mes-sel { appearance: none; -webkit-appearance: none; padding-right: 30px; cursor: pointer; }
+.mes-flecha { position: absolute; right: 11px; width: 8px; height: 8px; border-right: 2px solid var(--tinta-2); border-bottom: 2px solid var(--tinta-2); transform: translateY(-3px) rotate(45deg); pointer-events: none; }
+.mes-sel.grande { font-size: 32px; font-weight: 700; letter-spacing: -.022em; border-color: transparent; background: transparent; padding: 0 36px 0 6px; line-height: 1.2; }
+.mes-sel.grande:hover { background: var(--papel-2); }
+.barra-mes.grande .mes-flecha { right: 13px; width: 10px; height: 10px; }
+/* Textos que solo se ven en el móvil (más específicos que span.sub) */
+.tabla-arbol .resumen-movil, .tabla-ahorro .det, .tabla-ahorro .etq-movil { display: none; }
+
+/* Botones con aspecto de texto que llevan a otra vista */
+.reparto .nombre, .grupo-nom, .deuda .nom, .tabla-arbol .nom {
+  background: none; border: 0; padding: 0; font: inherit; color: var(--tinta); text-align: left; cursor: pointer;
+}
+.reparto .nombre:hover, .grupo-nom:hover, .deuda .nom:hover, .tabla-arbol .nom:hover { text-decoration: underline; text-underline-offset: 3px; }
+.grupo-nom { font-weight: 600; }
+.deuda .nom { font-weight: 650; }
+.tabla-arbol .nom { font-weight: 600; }
+tr.hijo .nom { font-weight: 400; }
+.concepto-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.deuda .cuota { cursor: default; text-decoration: none; }
+.agenda li { display: block; padding: 0; }
+.agenda-fila {
+  display: grid; grid-template-columns: 116px minmax(0, 1fr) auto; gap: 2px 16px; align-items: baseline;
+  width: 100%; padding: 11px 0; background: none; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer;
+}
+.agenda-fila:hover .que > span:first-child { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Filtros: en escritorio siempre visibles */
+@media (min-width: 761px) { .filtros-extra { display: contents; } }
+
+/* Diálogo: cabecera con cierre y pie fijo */
+.dialogo { --pad-x: 22px; --pad-b: 18px; max-height: calc(100dvh - 48px); overflow-y: auto; overscroll-behavior: contain; padding: 20px var(--pad-x) var(--pad-b); }
+.dialogo:focus { outline: none; }
+.dialogo-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.dialogo-cerrar { width: 38px; height: 38px; margin: -6px -10px 0 0; display: grid; place-items: center; border: 0; border-radius: 8px; background: none; color: var(--tinta-2); cursor: pointer; flex: none; }
+.dialogo-cerrar:hover { background: var(--papel-2); color: var(--tinta); }
+.pie.fijo { position: sticky; bottom: calc(-1 * var(--pad-b)); z-index: 2; margin: 0 calc(-1 * var(--pad-x)) calc(-1 * var(--pad-b)); padding: 12px var(--pad-x) var(--pad-b); background: var(--hoja); border-top: 1px solid var(--regla); justify-content: flex-end; }
+.acciones-sec { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-left: -10px; }
+.segmentos { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 10px; background: var(--papel-2); }
+.segmentos button { border: 0; background: none; padding: 9px 12px; border-radius: 7px; font-weight: 600; font-size: 15px; color: var(--tinta-2); cursor: pointer; }
+.segmentos button.activo { background: var(--hoja); color: var(--tinta); box-shadow: 0 1px 3px rgba(10, 16, 24, .16); }
+.etq-campo { font-size: 14px; font-weight: 600; }
+.grupo-campos.sin-regla { border-top: 0; padding-top: 6px; }
+.bloque-especiales { display: flex; flex-direction: column; gap: 8px; }
+.mas-opciones { border-top: 1px solid var(--regla); padding-top: 12px; }
+.mas-opciones summary { font-size: 15px; }
+
+/* Hoja «Más» del móvil */
+.lista-mas { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--regla); }
+.lista-mas a { display: flex; flex-direction: column; gap: 1px; padding: 12px 2px; border-bottom: 1px solid var(--regla); text-decoration: none; }
+.lista-mas a[aria-current="page"] .mas-tit { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.mas-tit { font-weight: 650; font-size: 17px; }
+.mas-sub { font-size: 14px; color: var(--tinta-3); }
+.mas-pie { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--tinta-2); font-size: 14px; }
+
+/* Aviso con «Deshacer» */
+#aviso { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.aviso-accion { background: none; border: 0; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 4px 2px; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .nav, .anadir-cab, .quien, .salir-cab, .solo-escritorio { display: none !important; }
+  .cabecera-in { min-height: 54px; padding-top: 0; }
+  body { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+  .vista { padding-block: 16px 104px; gap: 32px; }
+  h1 { font-size: 30px; }
+  .entrada, select.entrada, textarea.entrada, .en-linea .entrada { font-size: 16px; }
+
+  /* Barra inferior y botón de añadir */
+  .barra-inferior {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    background: var(--hoja); border-top: 1px solid var(--regla);
+    padding: 5px max(6px, env(safe-area-inset-right, 0px)) calc(5px + env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px));
+  }
+  .barra-inferior a, .boton-mas {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 54px; padding: 3px 2px;
+    color: var(--tinta-3); text-decoration: none; font: inherit; font-size: 12px; font-weight: 600; background: none; border: 0; border-radius: 10px; cursor: pointer;
+  }
+  .barra-inferior .ico { width: 54px; height: 30px; padding: 4px 16px; border-radius: 999px; }
+  .barra-inferior a[aria-current="page"], .boton-mas.activo { color: var(--tinta); }
+  .barra-inferior a[aria-current="page"] .ico, .boton-mas.activo .ico { background: var(--papel-2); stroke-width: 2.2; }
+  .fab {
+    display: grid; place-items: center; position: fixed; z-index: 41;
+    right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+    width: 56px; height: 56px; border-radius: 18px; border: 0; background: var(--tinta); color: var(--sobre-tinta); box-shadow: var(--sombra); cursor: pointer;
+  }
+  .fab .ico { width: 26px; height: 26px; stroke-width: 2.2; }
+  body.con-dialogo .fab { display: none; }
+  #aviso { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Mes como título */
+  .cab-mes { gap: 8px; }
+  .barra-mes.grande { width: 100%; justify-content: space-between; }
+  .mes-sel.grande { font-size: 25px; padding-right: 30px; }
+  .barra-mes.grande .mes-flecha { right: 10px; }
+  .icono { width: 44px; height: 44px; }
+
+  /* Diálogos como hoja desde abajo */
+  .velo { align-items: flex-end; padding: 0; }
+  .dialogo, .dialogo.estrecho { --pad-x: 16px; --pad-b: calc(14px + env(safe-area-inset-bottom, 0px)); max-width: none; margin: 0; border-radius: 16px 16px 0 0; max-height: 94dvh; padding-top: 16px; }
+  .pie.fijo > div, .dialogo .pie > div { width: 100%; }
+  .pie.fijo .boton, .dialogo .pie .boton { flex: 1; }
+
+  /* Lista del mes: zonas táctiles más grandes */
+  .fila { grid-template-columns: 38px minmax(0, 1fr); }
+  .fila .cuerpo { min-height: 48px; }
+  .libro > div:nth-child(3) input { margin-left: 0; max-width: 150px; }
+  .plegar, .plegar-hueco { width: 32px; height: 32px; }
+
+  /* Filtros plegables */
+  .filtros { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; margin-top: -18px; }
+  .filtros .campo.buscar { max-width: none; }
+  .boton-filtros { display: inline-flex; min-height: 44px; }
+  .filtros-extra { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 12px; padding: 6px 0 2px; }
+  .filtros-extra.cerrado { display: none; }
+  .filtros-extra .campo { max-width: none; }
+
+  /* Gastos e ingresos: una línea por movimiento; se toca para editar */
+  .tabla-env.lista-movil, .tabla-env.tabla-ahorro { overflow: visible; }
+  .tabla-arbol thead, .tabla-arbol .col-cat, .tabla-arbol .col-tipo, .tabla-arbol .col-cuando, .tabla-arbol .col-acc, .tabla-arbol .nota { display: none; }
+  .tabla-arbol, .tabla-arbol tbody, .tabla-arbol tfoot { display: block; }
+  .tabla-arbol tr { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid var(--regla); }
+  .tabla-arbol td { display: block; padding: 0; border: 0; min-width: 0; }
+  .tabla-arbol td.concepto { min-width: 0; }
+  .tabla-arbol .arbol { gap: 6px; padding-left: calc(var(--nivel, 0) * 16px); }
+  .tabla-arbol .nom { padding: 2px 0; }
+  .tabla-arbol .nom::after { content: ""; position: absolute; inset: 0; }
+  .tabla-arbol .plegar { position: relative; z-index: 1; }
+  .tabla-arbol .resumen-movil { display: block; }
+  .tabla-arbol .resumen-movil .muestra { width: 9px; height: 9px; margin-right: 6px; }
+  .tabla-arbol .col-imp .sub { display: none; }
+  .tabla-arbol tfoot tr { border-top: 2px solid var(--tinta); border-bottom: 0; }
+
+  /* Ahorro: mes, cuánto apartas y cuánto te queda */
+  .tabla-ahorro thead, .tabla-ahorro .col-ing, .tabla-ahorro .col-gas, .tabla-ahorro .col-disp, .tabla-ahorro .col-acum { display: none; }
+  .tabla-ahorro table, .tabla-ahorro tbody, .tabla-ahorro tfoot { display: block; }
+  .tabla-ahorro tr { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--regla); }
+  .tabla-ahorro td { display: block; padding: 0; border: 0; background: none !important; }
+  .tabla-ahorro tr.sel { background: var(--marca); margin-inline: -10px; padding-inline: 10px; border-radius: 8px; }
+  .tabla-ahorro .det { display: block; margin-top: 2px; }
+  .tabla-ahorro .etq-movil { display: block; font-size: 12px; color: var(--tinta-3); text-align: right; margin-bottom: 2px; }
+  .tabla-ahorro .entrada.corta { width: 100px; }
+  .tabla-ahorro tfoot tr { border-top: 2px solid var(--tinta); border-bottom: 0; }
+
+  /* Agenda y deudas */
+  .agenda-fila { grid-template-columns: minmax(0, 1fr) auto; }
+  .agenda-fila .cuando { grid-column: 1 / -1; }
+  .deuda { padding: 12px 0; }
 }

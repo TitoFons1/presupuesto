@@ -8,16 +8,18 @@ export function cabecera(titulo, sub, ...acciones) {
     acciones.length ? h('div', { class: 'acciones' }, acciones) : null);
 }
 
-export function selectorMes(ctx) {
+// Selector de mes que hace de título: ‹ Diciembre 2026 ›
+export function barraMes(ctx, { grande = true } = {}) {
   const ms = mesesPlan(ctx.I), i = ms.indexOf(ctx.mes);
-  const sel = h('select', { class: 'mes-sel', 'aria-label': 'Mes', 'data-fk': 'sel-mes' });
+  const sel = h('select', { class: 'mes-sel' + (grande ? ' grande' : ''), 'aria-label': 'Mes que estás viendo', 'data-fk': 'sel-mes' });
   rellenarMeses(sel, ms, ctx.mes);
   sel.addEventListener('change', () => ctx.setMes(sel.value));
-  return h('div', { class: 'selector-mes' },
+  return h('div', { class: 'barra-mes' + (grande ? ' grande' : '') },
     h('button', { type: 'button', class: 'icono', 'aria-label': 'Mes anterior', 'data-fk': 'mes-ant', disabled: i <= 0, onclick: () => ctx.setMes(sumarMeses(ctx.mes, -1)), text: '‹' }),
-    sel,
+    h('span', { class: 'mes-envoltura' }, sel, h('span', { class: 'mes-flecha', 'aria-hidden': 'true' })),
     h('button', { type: 'button', class: 'icono', 'aria-label': 'Mes siguiente', 'data-fk': 'mes-sig', disabled: i >= ms.length - 1, onclick: () => ctx.setMes(sumarMeses(ctx.mes, 1)), text: '›' }));
 }
+export const selectorMes = ctx => barraMes(ctx, { grande: false });
 
 export const muestra = color => h('span', { class: 'muestra ' + (color || 'c0'), 'aria-hidden': 'true' });
 

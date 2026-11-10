@@ -1,7 +1,8 @@
 import { h, eur, mesLargo, mesTitulo, estadoQueda, pastilla, parseEur, centATexto, aviso } from '../ui.js';
 import { resumen, importe, hijosDe, catRaiz, catDe } from '../calc.js';
-import { selectorMes, muestra, etiquetas, vacio } from '../componentes.js';
+import { barraMes, muestra, etiquetas, vacio } from '../componentes.js';
 import { api } from '../api.js';
+import { fijarFiltro } from './listado.js';
 
 const abiertos = new Set();
 
@@ -36,17 +37,21 @@ function listaAgrupada(ctx, kind, k) {
   return orden.map(g => {
     const items = g.items.sort((a, b) => importe(I, b, k) - importe(I, a, k));
     const total = items.reduce((s, m) => s + importe(I, m, k), 0);
+    const nombre = g.c ? g.c.name : 'Sin categoría';
+    const ver = () => { fijarFiltro(kind, { cat: g.c ? String(g.c.id) : '' }); ctx.irA(kind === 'gasto' ? '#/gastos' : '#/ingresos'); };
     return h('div', { class: 'grupo' },
-      h('div', { class: 'grupo-cab' }, muestra(g.c ? g.c.color : 'c0'), h('span', { text: g.c ? g.c.name : 'Sin categoría' }), h('span', { class: 'total', text: eur(total) })),
+      h('div', { class: 'grupo-cab' }, muestra(g.c ? g.c.color : 'c0'),
+        h('button', { type: 'button', class: 'grupo-nom', onclick: ver, 'aria-label': `${nombre}: ver todos en ${kind === 'gasto' ? 'Gastos' : 'Ingresos'}`, text: nombre }),
+        h('span', { class: 'total', text: eur(total) })),
       h('ul', { class: 'filas' }, items.flatMap(m => fila(ctx, m, k, 0))));
   });
 }
 
 export function render(main, ctx) {
   const I = ctx.I, k = ctx.mes, r = resumen(I, k), est = estadoQueda(r.queda);
-  main.append(h('div', { class: 'vista-cab' },
-    h('div', { class: 'vista-tit' }, h('h1', { text: mesTitulo(k) }), h('div', { class: 'sub' }, pastilla(est))),
-    selectorMes(ctx)));
+  main.append(h('div', { class: 'vista-cab cab-mes' },
+    h('h1', { class: 'sr', text: mesTitulo(k) }),
+    barraMes(ctx), pastilla(est)));
 
   const inAh = h('input', { type: 'text', inputmode: 'decimal', id: 'ahorro-mes', 'data-fk': 'ahorro-mes', autocomplete: 'off', value: centATexto(r.ah), 'aria-describedby': 'ahorro-ayuda' });
   inAh.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); inAh.blur(); } });
@@ -68,9 +73,9 @@ export function render(main, ctx) {
   const gastos = listaAgrupada(ctx, 'gasto', k), ingresos = listaAgrupada(ctx, 'ingreso', k);
   main.append(h('div', { class: 'dos mes-dos' },
     h('section', { class: 'seccion' },
-      h('div', { class: 'seccion-cab' }, h('h2', { text: 'Gastos' }), h('button', { type: 'button', class: 'boton peque', text: 'Añadir gasto', onclick: () => ctx.abrirMovimiento({ kind: 'gasto', mes: k }) })),
+      h('div', { class: 'seccion-cab' }, h('h2', { text: 'Gastos' }), h('button', { type: 'button', class: 'boton peque solo-escritorio', text: 'Añadir gasto', onclick: () => ctx.abrirMovimiento({ kind: 'gasto', mes: k }) })),
       gastos || vacio('No hay gastos en ' + mesLargo(k) + '.')),
     h('section', { class: 'seccion' },
-      h('div', { class: 'seccion-cab' }, h('h2', { text: 'Ingresos' }), h('button', { type: 'button', class: 'boton peque', text: 'Añadir ingreso', onclick: () => ctx.abrirMovimiento({ kind: 'ingreso', mes: k }) })),
+      h('div', { class: 'seccion-cab' }, h('h2', { text: 'Ingresos' }), h('button', { type: 'button', class: 'boton peque solo-escritorio', text: 'Añadir ingreso', onclick: () => ctx.abrirMovimiento({ kind: 'ingreso', mes: k }) })),
       ingresos || vacio('No hay ingresos en ' + mesLargo(k) + '. Añade tu nómina para empezar.'))));
 }

@@ -38,19 +38,23 @@ export function render(main, ctx) {
     inp.addEventListener('change', () => guardar(k, inp));
     const est = estadoQueda(r.queda);
     return h('tr', { class: k === ctx.mes ? 'sel' : null },
-      h('td', null, h('a', { href: '#/mes/' + k, class: 'enlace', text: mesTitulo(k) })),
-      h('td', { class: 'n', text: eur(r.ing) }), h('td', { class: 'n', text: eur(r.gas) }), h('td', { class: 'n', text: eur(r.disp) }),
-      h('td', { class: 'n' }, inp),
-      h('td', { class: 'n' }, h('span', { class: 'q ' + est.clase, text: eur(r.queda) }), r.queda < 2500 ? h('span', { class: 'sr', text: est.texto }) : null),
-      h('td', { class: 'n', text: eur(a) }));
+      h('td', { class: 'col-mes' }, h('a', { href: '#/mes/' + k, class: 'enlace', text: mesTitulo(k) }),
+        h('span', { class: 'sub det', text: `Entra ${eur(r.ing)}, sale ${eur(r.gas)}. Acumulado ${eur(a)}.` })),
+      h('td', { class: 'n col-ing', text: eur(r.ing) }), h('td', { class: 'n col-gas', text: eur(r.gas) }), h('td', { class: 'n col-disp', text: eur(r.disp) }),
+      h('td', { class: 'n col-ah' }, h('span', { class: 'etq-movil', 'aria-hidden': 'true', text: 'Ahorras' }), inp),
+      h('td', { class: 'n col-queda' }, h('span', { class: 'etq-movil', 'aria-hidden': 'true', text: 'Te queda' }), h('span', { class: 'q ' + est.clase, text: eur(r.queda) }), r.queda < 2500 ? h('span', { class: 'sr', text: est.texto }) : null),
+      h('td', { class: 'n col-acum', text: eur(a) }));
   });
   main.append(h('section', { class: 'seccion' },
     h('div', { class: 'seccion-cab' }, h('h2', { text: 'Mes a mes' }), h('p', { text: '«Te queda» es lo que sobra después de pagarlo todo y apartar el ahorro.' })),
-    h('div', { class: 'tabla-env' }, h('table', null,
-      h('thead', null, h('tr', null, ['Mes', 'Entra', 'Sale', 'Disponible', 'Ahorras', 'Te queda', 'Acumulado'].map((t, i) => h('th', { scope: 'col', class: i ? 'n' : null, text: t })))),
+    h('div', { class: 'tabla-env tabla-ahorro' }, h('table', null,
+      h('thead', null, h('tr', null, [['Mes', 'col-mes'], ['Entra', 'col-ing'], ['Sale', 'col-gas'], ['Disponible', 'col-disp'], ['Ahorras', 'col-ah'], ['Te queda', 'col-queda'], ['Acumulado', 'col-acum']]
+        .map(([t, c], i) => h('th', { scope: 'col', class: (i ? 'n ' : '') + c, text: t })))),
       h('tbody', null, cuerpo),
-      h('tfoot', null, h('tr', null, h('td', { text: 'Total' }), h('td', { class: 'n', text: eur(tot.ing) }), h('td', { class: 'n', text: eur(tot.gas) }), h('td', { class: 'n', text: eur(tot.disp) }),
-        h('td', { class: 'n', text: eur(tot.ah) }), h('td', { class: 'n', text: eur(tot.queda) }), h('td', { class: 'n', text: eur(total) })))))));
+      h('tfoot', null, h('tr', null, h('td', { class: 'col-mes', text: 'Total' }), h('td', { class: 'n col-ing', text: eur(tot.ing) }), h('td', { class: 'n col-gas', text: eur(tot.gas) }), h('td', { class: 'n col-disp', text: eur(tot.disp) }),
+        h('td', { class: 'n col-ah' }, h('span', { class: 'etq-movil', 'aria-hidden': 'true', text: 'Ahorras' }), eur(tot.ah)),
+        h('td', { class: 'n col-queda' }, h('span', { class: 'etq-movil', 'aria-hidden': 'true', text: 'Te queda' }), eur(tot.queda)),
+        h('td', { class: 'n col-acum', text: eur(total) })))))));
 
   // Duración del plan
   const opciones = rango(sumarMeses(ms[0], -24), sumarMeses(ms.at(-1), 36));

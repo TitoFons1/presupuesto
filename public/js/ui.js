@@ -105,26 +105,60 @@ export function guardarLocal(k, v) { try { localStorage.setItem('presupuesto-' +
 
 /* ---------- avisos ---------- */
 let temporizador = null;
-export function aviso(texto, tipo = '') {
+// accion: { texto, fn } muestra un botón en el aviso (por ejemplo, «Deshacer»).
+export function aviso(texto, tipo = '', accion = null) {
   const a = document.getElementById('aviso');
-  a.textContent = texto;
-  a.className = tipo;
+  a.replaceChildren(h('span', { text: texto }));
+  if (accion) {
+    a.append(h('button', { type: 'button', class: 'aviso-accion', text: accion.texto, onclick: () => { a.hidden = true; accion.fn(); } }));
+  }
+  a.className = tipo + (accion ? ' con-accion' : '');
   a.hidden = false;
   clearTimeout(temporizador);
-  temporizador = setTimeout(() => { a.hidden = true; }, tipo === 'mal' ? 6000 : 3000);
+  temporizador = setTimeout(() => { a.hidden = true; }, accion ? 8000 : tipo === 'mal' ? 6000 : 3000);
+}
+
+export const esTactil = () => !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+export const esMovil = () => !!(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
+
+/* ---------- iconos (trazos de 24×24) ---------- */
+const TRAZOS = {
+  resumen: 'M4 11.5 12 4l8 7.5M6.5 9.5V20h11V9.5',
+  mes: 'M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4',
+  gastos: 'M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01',
+  ahorro: 'M5 20v-5M10.5 20v-9M16 20V5M3 20h18',
+  mas: 'M5.5 12h.01M12 12h.01M18.5 12h.01',
+  sumar: 'M12 5v14M5 12h14',
+  cerrar: 'M6 6l12 12M18 6 6 18',
+  filtro: 'M4 6h16M7 12h10M10 18h4',
+};
+export function icono(nombre) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'ico');
+  const p = document.createElementNS(ns, 'path');
+  p.setAttribute('d', TRAZOS[nombre] || '');
+  svg.append(p);
+  return svg;
 }
 
 /* ---------- diálogos ---------- */
 const enfocables = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
 
-export function dialogo({ titulo, cuerpo, clase = '' }) {
+// En móvil se abre como una hoja desde abajo (lo decide el CSS).
+// enfocar: false evita abrir el teclado del móvil nada más abrir.
+export function dialogo({ titulo, cuerpo, clase = '', enfocar = true }) {
   const capa = document.getElementById('capa');
   const anterior = document.activeElement;
   const fkAnterior = anterior && anterior.dataset ? anterior.dataset.fk : null;
   const id = 'dlg-' + Math.random().toString(36).slice(2, 9);
-  const caja = h('div', { class: 'dialogo ' + clase, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id },
-    h('h2', { id, text: titulo }), cuerpo);
+  const botonCerrar = h('button', { type: 'button', class: 'dialogo-cerrar', 'aria-label': 'Cerrar' }, icono('cerrar'));
+  const caja = h('div', { class: 'dialogo ' + clase, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id, tabindex: '-1' },
+    h('div', { class: 'dialogo-cab' }, h('h2', { id, text: titulo }), botonCerrar), cuerpo);
   const velo = h('div', { class: 'velo' }, caja);
+  botonCerrar.addEventListener('click', () => cerrar());
   let cerrado = false;
   const alCerrar = [];
   function tecla(e) {
@@ -151,7 +185,8 @@ export function dialogo({ titulo, cuerpo, clase = '' }) {
   capa.append(velo);
   document.body.classList.add('con-dialogo');
   requestAnimationFrame(() => {
-    const f = caja.querySelector('[autofocus]') || caja.querySelector('input, select, textarea') || caja.querySelector('button');
+    if (!enfocar) { caja.focus({ preventScroll: true }); return; }
+    const f = caja.querySelector('[autofocus]') || caja.querySelector('input:not([type="radio"]), select, textarea') || caja.querySelector('button');
     if (f) f.focus();
   });
   return { caja, cerrar, alCerrar: fn => alCerrar.push(fn) };

@@ -8,15 +8,21 @@ export function aplicarTema() {
   else document.documentElement.removeAttribute('data-theme');
 }
 
-function seccionTema() {
+function seccionTema(ctx) {
   const actual = leerLocal('tema') || 'sistema';
   const ops = [['sistema', 'Como el sistema'], ['light', 'Claro'], ['dark', 'Oscuro']];
   return h('section', { class: 'seccion' }, h('h2', { text: 'Apariencia' }),
     h('fieldset', null, h('legend', { class: 'sr', text: 'Tema' }), h('div', { class: 'opciones' }, ops.map(([v, t]) => {
       const r = h('input', { type: 'radio', name: 'tema', value: v, checked: v === actual });
-      r.addEventListener('change', () => { guardarLocal('tema', v); aplicarTema(); });
+      r.addEventListener('change', async () => {
+        guardarLocal('tema', v); aplicarTema();
+        // Se guarda con tu cuenta para que se aplique en todos tus dispositivos.
+        try { const res = await api('PUT', '/me/prefs', { tema: v }); if (ctx.user) ctx.user.prefs = res.prefs; }
+        catch (err) { aviso(err.message, 'mal'); }
+      });
       return h('label', { class: 'opcion' }, r, t);
-    }))));
+    }))),
+    h('p', { class: 'ayuda', text: 'Se guarda con tu cuenta y se aplica en todos tus dispositivos.' }));
 }
 
 function seccionPassword() {
@@ -65,8 +71,8 @@ function seccionUsuarios(ctx) {
     try { await api('POST', '/users', { username: usuario.value.trim(), password: pw.value }); form.reset(); aviso('Acceso creado'); cargar(); }
     catch (err) { error.textContent = err.message; error.hidden = false; }
   });
-  return h('section', { class: 'seccion' }, h('h2', { text: 'Personas con acceso' }),
-    h('p', { class: 'ayuda', text: 'Todas las cuentas ven y cambian el mismo presupuesto.' }), lista, form);
+  return h('section', { class: 'seccion' }, h('h2', { text: 'Personas que comparten tu presupuesto' }),
+    h('p', { class: 'ayuda', text: 'Las cuentas que crees aquí ven y cambian este mismo presupuesto. Si alguien quiere uno propio, que se registre desde la pantalla de entrada.' }), lista, form);
 }
 
 function seccionCopia(ctx) {
@@ -105,6 +111,6 @@ function seccionCopia(ctx) {
 export function render(main, ctx) {
   main.append(cabecera('Ajustes', `Has entrado como ${ctx.user.username}.`));
   main.append(h('div', { class: 'dos' },
-    h('div', { class: 'columna' }, seccionTema(), seccionPassword()),
+    h('div', { class: 'columna' }, seccionTema(ctx), seccionPassword()),
     h('div', { class: 'columna' }, seccionUsuarios(ctx), seccionCopia(ctx))));
 }

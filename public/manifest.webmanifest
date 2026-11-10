@@ -1,0 +1,17 @@
+{
+  "name": "Presupuesto",
+  "short_name": "Presupuesto",
+  "description": "Lo que entra, lo que sale y lo que te queda cada mes.",
+  "lang": "es",
+  "start_url": "/#/resumen",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F5F1",
+  "theme_color": "#1D2A3A",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

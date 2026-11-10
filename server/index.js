@@ -1,16 +1,19 @@
 import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sembrarSiVacia } from './db.js';
-import { asegurarAdmin, limpiarSesionesCaducadas, requireAppHeader } from './auth.js';
+import './db.js'; // abre la base de datos y la actualiza si hace falta
+import { asegurarAdmin, limpiarSesionesCaducadas, requireAppHeader, modoRegistro } from './auth.js';
 import { api, manejarErrores } from './api.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, '..', 'public');
 const PORT = Number(process.env.PORT || 3000);
 
-sembrarSiVacia();
 asegurarAdmin();
+const registro = modoRegistro();
+console.log(registro === 'abierto' ? 'Registro de cuentas: abierto a cualquiera con el enlace.'
+  : registro === 'codigo' ? 'Registro de cuentas: con código de invitación (REGISTRO_CODIGO).'
+  : 'Registro de cuentas: desactivado. Para activarlo, define REGISTRO_CODIGO o REGISTRO=abierto.');
 limpiarSesionesCaducadas();
 setInterval(limpiarSesionesCaducadas, 6 * 60 * 60 * 1000).unref();
 
