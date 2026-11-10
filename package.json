@@ -1,0 +1,20 @@
+{
+  "name": "presupuesto",
+  "version": "1.0.0",
+  "description": "Presupuesto personal autoalojado: gastos, ingresos, ahorro, deudas y Hacienda.",
+  "private": true,
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "express": "^5.1.0"
+  }
+}
